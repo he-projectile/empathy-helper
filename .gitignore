@@ -1,0 +1,46 @@
+# --- Окружение и пакетные менеджеры ---
+.venv/
+venv/
+env/
+# Кэш самого uv (именно здесь он хранит скачанные пакеты)
+.uv/
+
+# --- Данные и Модели (храним только локально) ---
+# Игнорируем папки с датасетами и результатами обучения
+data/
+datasets/
+models/
+weights/
+runs/
+logs/
+checkpoints/
+
+# Игнорируем любые тяжелые форматы файлов ML
+*.pth
+*.pt
+*.onnx
+*.pkl
+*.pickle
+*.h5
+*.ckpt
+*.csv
+*.jsonl
+
+# --- Настройки VS Code и локальные секреты ---
+.vscode/
+*.code-workspace
+# Локальные переменные окружения (пароли, API-ключи токенов)
+.env
+.env.local
+
+# --- Кэш Python и системы ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+
+
+!data/
+!data/**/.gitkeep

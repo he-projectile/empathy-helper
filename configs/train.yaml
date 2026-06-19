@@ -1,0 +1,9 @@
+defaults:
+  - model: bilstm
+  - data: goemotions
+
+seed: 42
+
+trainer:
+  max_epochs: 10
+  accelerator: auto
