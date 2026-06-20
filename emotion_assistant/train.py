@@ -27,11 +27,15 @@ def parse_label_list(raw_label: str) -> List[int]:
     if not text:
         return []
 
-    values = [value.strip() for value in text.replace(",", " ").split() if value.strip()]
+    values = [
+        value.strip() for value in text.replace(",", " ").split() if value.strip()
+    ]
     return [int(value) for value in values if value.isdigit()]
 
 
-def build_multihot_labels(label_lists: List[List[int]], num_classes: int) -> torch.Tensor:
+def build_multihot_labels(
+    label_lists: List[List[int]], num_classes: int
+) -> torch.Tensor:
     labels = torch.zeros((len(label_lists), num_classes), dtype=torch.float32)
     for idx, label_list in enumerate(label_lists):
         for label in label_list:
@@ -47,7 +51,9 @@ def load_data(csv_path: str, max_length: int):
     return texts, label_lists
 
 
-def make_dataloader(dataset: EmotionDataset, batch_size: int, num_workers: int, shuffle: bool = False):
+def make_dataloader(
+    dataset: EmotionDataset, batch_size: int, num_workers: int, shuffle: bool = False
+):
     return DataLoader(
         dataset,
         batch_size=batch_size,
@@ -111,8 +117,11 @@ def main(cfg: DictConfig) -> None:
         shuffle=True,
     )
     validation_loader = make_dataloader(
-        validation_dataset, cfg.data.batch_size, cfg.data.num_workers)
-    test_loader = make_dataloader(test_dataset, cfg.data.batch_size, cfg.data.num_workers)
+        validation_dataset, cfg.data.batch_size, cfg.data.num_workers
+    )
+    test_loader = make_dataloader(
+        test_dataset, cfg.data.batch_size, cfg.data.num_workers
+    )
 
     model = BiLSTMClassifier(
         vocab_size=len(vocab),

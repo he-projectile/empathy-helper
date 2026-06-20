@@ -42,13 +42,17 @@ def load_checkpoint(checkpoint_path: str, metadata_path: str):
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     state_dict = checkpoint.get("state_dict", checkpoint)
     if all(key.startswith("model.") for key in state_dict.keys()):
-        state_dict = {key.replace("model.", "", 1): value for key, value in state_dict.items()}
+        state_dict = {
+            key.replace("model.", "", 1): value for key, value in state_dict.items()
+        }
     model.load_state_dict(state_dict)
     model.eval()
     return model, vocab, metadata
 
 
-def predict(text: str, model: torch.nn.Module, vocab: dict, max_length: int, top_k: int = 5):
+def predict(
+    text: str, model: torch.nn.Module, vocab: dict, max_length: int, top_k: int = 5
+):
     input_ids = encode_text(text, vocab, max_length)
     with torch.no_grad():
         logits = model(input_ids)
@@ -56,7 +60,9 @@ def predict(text: str, model: torch.nn.Module, vocab: dict, max_length: int, top
 
     ranked = sorted(range(len(probs)), key=lambda i: probs[i], reverse=True)
     topk = ranked[:top_k]
-    topk_labels = [GOEMOTIONS_LABELS[i] if i < len(GOEMOTIONS_LABELS) else str(i) for i in topk]
+    topk_labels = [
+        GOEMOTIONS_LABELS[i] if i < len(GOEMOTIONS_LABELS) else str(i) for i in topk
+    ]
     return {
         "text": text,
         "predicted_label": {
@@ -68,7 +74,9 @@ def predict(text: str, model: torch.nn.Module, vocab: dict, max_length: int, top
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Infer emotion from a single text input.")
+    parser = argparse.ArgumentParser(
+        description="Infer emotion from a single text input."
+    )
     parser.add_argument("text", type=str, help="Text to analyze")
     parser.add_argument(
         "--checkpoint",
@@ -82,7 +90,9 @@ def main():
         default="outputs/checkpoints/metadata.pkl",
         help="Path to saved model metadata",
     )
-    parser.add_argument("--top_k", type=int, default=5, help="Top K probabilities to return")
+    parser.add_argument(
+        "--top_k", type=int, default=5, help="Top K probabilities to return"
+    )
     args = parser.parse_args()
 
     model, vocab, metadata = load_checkpoint(args.checkpoint, args.metadata)

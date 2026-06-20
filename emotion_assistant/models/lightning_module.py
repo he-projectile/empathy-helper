@@ -10,12 +10,22 @@ class EmotionClassifierModule(LightningModule):
         self.model = model
         self.learning_rate = learning_rate
         self.loss_fn = torch.nn.BCEWithLogitsLoss()
-        self.train_accuracy = MultilabelAccuracy(num_labels=model.classifier.out_features)
+        self.train_accuracy = MultilabelAccuracy(
+            num_labels=model.classifier.out_features
+        )
         self.val_accuracy = MultilabelAccuracy(num_labels=model.classifier.out_features)
-        self.test_accuracy = MultilabelAccuracy(num_labels=model.classifier.out_features)
-        self.train_f1 = MultilabelF1Score(num_labels=model.classifier.out_features, average="macro")
-        self.val_f1 = MultilabelF1Score(num_labels=model.classifier.out_features, average="macro")
-        self.test_f1 = MultilabelF1Score(num_labels=model.classifier.out_features, average="macro")
+        self.test_accuracy = MultilabelAccuracy(
+            num_labels=model.classifier.out_features
+        )
+        self.train_f1 = MultilabelF1Score(
+            num_labels=model.classifier.out_features, average="macro"
+        )
+        self.val_f1 = MultilabelF1Score(
+            num_labels=model.classifier.out_features, average="macro"
+        )
+        self.test_f1 = MultilabelF1Score(
+            num_labels=model.classifier.out_features, average="macro"
+        )
 
     def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
         return self.model(input_ids)
