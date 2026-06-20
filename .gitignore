@@ -16,6 +16,8 @@ checkpoints/
 outputs/
 .mlruns/
 
+mlflow.db
+
 # Игнорируем любые тяжелые форматы файлов ML
 *.pth
 *.pt
@@ -43,5 +45,9 @@ __pycache__/
 Thumbs.db
 AGENTS.md
 
+# Разрешаем Git заглянуть в саму папку data, но игнорируем всё её содержимое
 !data/
-!data/**/.gitkeep
+data/*
+
+# Делаем исключение ТОЛЬКО для технического файла .gitkeep
+!data/.gitkeep
