@@ -1153,13 +1153,15 @@ wheels = [
 [[package]]
 name = "emotion-assistant"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "datasets" },
     { name = "dvc" },
     { name = "hydra-core" },
     { name = "lightning" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "mlflow" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -1186,6 +1188,7 @@ requires-dist = [
     { name = "dvc", specifier = ">=3.67.1" },
     { name = "hydra-core", specifier = ">=1.3.3" },
     { name = "lightning", specifier = ">=2.6.5" },
+    { name = "matplotlib", specifier = ">=3.8.0" },
     { name = "mlflow", specifier = ">=3.14.0" },
     { name = "numpy", specifier = ">=2.2.6" },
     { name = "omegaconf", specifier = ">=2.3.1" },

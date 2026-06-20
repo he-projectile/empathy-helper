@@ -18,6 +18,10 @@ from emotion_assistant.data.preprocessing import build_vocab
 from emotion_assistant.models.bilstm import BiLSTMClassifier
 from emotion_assistant.models.lightning_module import EmotionClassifierModule
 
+# plotting
+import pandas as pd
+import matplotlib.pyplot as plt
+
 
 def make_dataloader(
     dataset: EmotionDataset,
@@ -152,6 +156,59 @@ def main(cfg: DictConfig) -> None:
 
         print(f"Saved checkpoint to {checkpoint_path}")
         print(f"Saved metadata to {metadata_path}")
+        # Generate plots from latest lightning logs
+        try:
+            logs_dir = original_cwd / "lightning_logs"
+            plots_dir = original_cwd / "plots"
+            plots_dir.mkdir(exist_ok=True)
+
+            versions = [p for p in logs_dir.iterdir() if p.name.startswith("version_") and p.is_dir()]
+            if versions:
+                latest = sorted(versions, key=lambda p: int(p.name.split("_")[1]))[-1]
+                metrics_file = latest / "metrics.csv"
+                if metrics_file.exists():
+                    df = pd.read_csv(metrics_file)
+                    if "epoch" in df.columns:
+                        epoch_df = df.groupby("epoch").last().reset_index()
+                        if "train_loss" in epoch_df.columns:
+                            plt.figure()
+                            plt.plot(epoch_df["epoch"], epoch_df["train_loss"], marker="o")
+                            plt.xlabel("epoch")
+                            plt.ylabel("train_loss")
+                            plt.title("Train Loss vs Epoch")
+                            plt.grid(True)
+                            plt.savefig(plots_dir / "train_loss.png")
+                            plt.close()
+
+                        if "val_loss" in epoch_df.columns:
+                            plt.figure()
+                            plt.plot(epoch_df["epoch"], epoch_df["val_loss"], marker="o", color="orange")
+                            plt.xlabel("epoch")
+                            plt.ylabel("val_loss")
+                            plt.title("Validation Loss vs Epoch")
+                            plt.grid(True)
+                            plt.savefig(plots_dir / "val_loss.png")
+                            plt.close()
+
+                        f1_col = None
+                        if "val_f1" in epoch_df.columns:
+                            f1_col = "val_f1"
+                        elif "train_f1_epoch" in epoch_df.columns:
+                            f1_col = "train_f1_epoch"
+
+                        if f1_col:
+                            plt.figure()
+                            plt.plot(epoch_df["epoch"], epoch_df[f1_col], marker="o", color="green")
+                            plt.xlabel("epoch")
+                            plt.ylabel(f1_col)
+                            plt.title("Macro F1 vs Epoch")
+                            plt.grid(True)
+                            plt.savefig(plots_dir / "macro_f1.png")
+                            plt.close()
+                        print(f"Saved plots to {plots_dir}")
+        except Exception:
+            # plotting must not fail training
+            pass
 
 
 if __name__ == "__main__":

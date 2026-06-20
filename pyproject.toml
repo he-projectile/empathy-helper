@@ -17,7 +17,16 @@ dependencies = [
     "pre-commit>=4.6.0",
     "scikit-learn>=1.7.2",
     "torch>=2.6.0,<2.7",
+    "matplotlib>=3.8.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["emotion_assistant*"]
 
 [tool.ruff]
 line-length = 88
