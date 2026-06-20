@@ -14,7 +14,9 @@ def parse_label_list(raw_label: str) -> List[int]:
     if not text:
         return []
 
-    values = [value.strip() for value in text.replace(",", " ").split() if value.strip()]
+    values = [
+        value.strip() for value in text.replace(",", " ").split() if value.strip()
+    ]
     return [int(value) for value in values if value.isdigit()]
 
 
@@ -25,7 +27,9 @@ def load_data(csv_path: Path) -> Tuple[List[str], List[List[int]]]:
     return texts, label_lists
 
 
-def build_multihot_labels(label_lists: List[List[int]], num_classes: int) -> torch.Tensor:
+def build_multihot_labels(
+    label_lists: List[List[int]], num_classes: int
+) -> torch.Tensor:
     labels = torch.zeros((len(label_lists), num_classes), dtype=torch.float32)
     for index, label_list in enumerate(label_lists):
         for label in label_list:

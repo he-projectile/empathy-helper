@@ -22,11 +22,15 @@ def main() -> None:
         default=Path("outputs/checkpoints/metadata.pkl"),
         help="Path to saved model metadata",
     )
-    parser.add_argument("--top_k", type=int, default=5, help="Top K probabilities to return")
+    parser.add_argument(
+        "--top_k", type=int, default=5, help="Top K probabilities to return"
+    )
     args = parser.parse_args()
 
     model, vocab, metadata = load_checkpoint(args.checkpoint, args.metadata)
-    result = predict_text(args.text, model, vocab, metadata["max_length"], top_k=args.top_k)
+    result = predict_text(
+        args.text, model, vocab, metadata["max_length"], top_k=args.top_k
+    )
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 

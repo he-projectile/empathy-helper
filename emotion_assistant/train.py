@@ -36,7 +36,11 @@ def make_dataloader(
 
 def log_config(cfg: DictConfig) -> None:
     mlflow.log_param("seed", cfg.seed)
-    for prefix, section in [("data", cfg.data), ("model", cfg.model), ("trainer", cfg.trainer)]:
+    for prefix, section in [
+        ("data", cfg.data),
+        ("model", cfg.model),
+        ("trainer", cfg.trainer),
+    ]:
         for key, value in section.items():
             mlflow.log_param(f"{prefix}.{key}", str(value))
 
@@ -98,7 +102,9 @@ def main(cfg: DictConfig) -> None:
         dropout=cfg.model.dropout,
         num_classes=num_classes,
     )
-    lightning_module = EmotionClassifierModule(model=model, learning_rate=cfg.model.learning_rate)
+    lightning_module = EmotionClassifierModule(
+        model=model, learning_rate=cfg.model.learning_rate
+    )
 
     if cfg.trainer.get("accelerator") == "gpu" and not torch.cuda.is_available():
         print("CUDA is not available, switching trainer to CPU.")

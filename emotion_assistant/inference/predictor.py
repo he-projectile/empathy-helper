@@ -17,7 +17,9 @@ def encode_text(text: str, vocab: Dict[str, int], max_length: int) -> torch.Tens
     return torch.tensor([ids], dtype=torch.long)
 
 
-def load_checkpoint(checkpoint_path: Path, metadata_path: Path) -> Tuple[BiLSTMClassifier, Dict[str, int], Dict[str, object]]:
+def load_checkpoint(
+    checkpoint_path: Path, metadata_path: Path
+) -> Tuple[BiLSTMClassifier, Dict[str, int], Dict[str, object]]:
     with metadata_path.open("rb") as handle:
         metadata = pickle.load(handle)
 
@@ -36,7 +38,9 @@ def load_checkpoint(checkpoint_path: Path, metadata_path: Path) -> Tuple[BiLSTMC
     checkpoint = torch.load(checkpoint_path, map_location="cpu")
     state_dict = checkpoint.get("state_dict", checkpoint)
     if all(key.startswith("model.") for key in state_dict.keys()):
-        state_dict = {key.replace("model.", "", 1): value for key, value in state_dict.items()}
+        state_dict = {
+            key.replace("model.", "", 1): value for key, value in state_dict.items()
+        }
     model.load_state_dict(state_dict)
     model.eval()
     return model, vocab, metadata
@@ -54,9 +58,14 @@ def predict_text(
         logits = model(input_ids)
         probs = torch.sigmoid(logits).squeeze(0).tolist()
 
-    ranked_indices = sorted(range(len(probs)), key=lambda index: probs[index], reverse=True)
+    ranked_indices = sorted(
+        range(len(probs)), key=lambda index: probs[index], reverse=True
+    )
     top_indices = ranked_indices[:top_k]
-    top_labels = [GOEMOTIONS_LABELS[index] if index < len(GOEMOTIONS_LABELS) else str(index) for index in top_indices]
+    top_labels = [
+        GOEMOTIONS_LABELS[index] if index < len(GOEMOTIONS_LABELS) else str(index)
+        for index in top_indices
+    ]
 
     return {
         "text": text,
@@ -64,5 +73,7 @@ def predict_text(
             "index": top_indices[0],
             "emotion": top_labels[0],
         },
-        "probs": {top_labels[i]: probs[top_indices[i]] for i in range(len(top_indices))},
+        "probs": {
+            top_labels[i]: probs[top_indices[i]] for i in range(len(top_indices))
+        },
     }
