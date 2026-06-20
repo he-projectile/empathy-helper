@@ -44,6 +44,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 AGENTS.md
+.gitignore
 
 # Разрешаем Git заглянуть в саму папку data, но игнорируем всё её содержимое
 !data/
