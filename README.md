@@ -49,7 +49,7 @@ Emotion Assistant — система автоматической классиф
 * присутствует шум и неоднозначная разметка;
 * исходно поддерживает множественные метки.
 
-Хранение данных осуществляется через DVC. Файлы датасета не должны храниться в Git-репозитории.
+Данные не хранятся в репозитории. Скачайте датасет локально с помощью `datasetDownload.py` или напрямую через библиотеку `datasets`.
 
 ---
 
@@ -114,7 +114,6 @@ Bidirectional LSTM
 * PyTorch;
 * PyTorch Lightning;
 * Hydra;
-* DVC;
 * MLflow;
 * uv;
 * Ruff;
@@ -143,7 +142,7 @@ Bidirectional LSTM
 ├── scripts/
 ├── plots/
 ├── outputs/
-├── dvc.yaml
+├── 
 ├── pyproject.toml
 └── README.md
 ```
@@ -184,12 +183,6 @@ pre-commit run -a
 
 ```bash
 uv run python datasetDownload.py --output-dir data/raw
-```
-
-Если настроено DVC-хранилище:
-
-```bash
-dvc pull
 ```
 
 ---
@@ -257,6 +250,8 @@ plots/
 
 # Инференс
 
+Inference works without training. A user can run predictions from a previously trained checkpoint or an ONNX model, and the inference pipeline does not perform any model training.
+
 Запуск предсказания для одного сообщения:
 
 ```bash
@@ -270,6 +265,51 @@ uv run python -m emotion_assistant.infer \
     "Сегодня отличный день" \
     --checkpoint outputs/checkpoints/last.ckpt \
     --metadata outputs/checkpoints/metadata.pkl
+```
+
+Экспорт модели в ONNX:
+
+```bash
+uv run python -m emotion_assistant.inference.export_onnx \
+    --checkpoint outputs/checkpoints/last.ckpt \
+    --metadata outputs/checkpoints/metadata.pkl \
+    --output outputs/model.onnx
+```
+
+Запуск инференса из ONNX-модели:
+
+```bash
+uv run python -m emotion_assistant.infer \
+    "Сегодня отличный день" \
+    --onnx outputs/model.onnx \
+    --metadata outputs/checkpoints/metadata.pkl
+```
+
+---
+
+# Автоматическая загрузка модели
+
+Если локальная модель отсутствует, можно автоматически загрузить её через DVC или Google Drive.
+
+```bash
+uv run python -m emotion_assistant.inference.dvc_download \
+    --model-path outputs/checkpoints/last.ckpt \
+    --gdrive-id <GDRIVE_FILE_ID>
+```
+
+Для автоматической загрузки контрольной точки используйте `huggingface_hub` или `hf` CLI.
+
+Пример с `hf` CLI:
+
+```bash
+hf repo download he-projectile/empathy-helper-model --pattern last.ckpt -o outputs/checkpoints
+```
+
+Пример с Python:
+
+```python
+from huggingface_hub import hf_hub_download
+hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='last.ckpt', local_dir='outputs/checkpoints')
 ```
 
 ---
@@ -293,7 +333,23 @@ outputs/model.onnx
 
 ---
 
-# Конвертация в TensorRT
+# Экспорт в TensorRT
+
+Преобразование ONNX-модели в TensorRT:
+
+```bash
+uv run python scripts/export_tensorrt.py \
+    --onnx outputs/model.onnx \
+    --output outputs/model.engine
+```
+
+Результат:
+
+```text
+outputs/model.engine
+```
+
+---
 
 Преобразование ONNX-модели в TensorRT:
 

@@ -2,6 +2,7 @@ from pathlib import Path
 import pickle
 from typing import Dict, List, Tuple
 
+import onnxruntime as ort
 import torch
 
 from emotion_assistant.data.labels import GOEMOTIONS_LABELS
@@ -44,6 +45,49 @@ def load_checkpoint(
     model.load_state_dict(state_dict)
     model.eval()
     return model, vocab, metadata
+
+
+def load_metadata(metadata_path: Path) -> Tuple[Dict[str, int], Dict[str, object]]:
+    with metadata_path.open("rb") as handle:
+        metadata = pickle.load(handle)
+
+    return metadata["vocab"], metadata
+
+
+def load_onnx_session(onnx_path: Path) -> ort.InferenceSession:
+    return ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
+
+
+def predict_text_onnx(
+    text: str,
+    session: ort.InferenceSession,
+    vocab: Dict[str, int],
+    max_length: int,
+    top_k: int = 5,
+) -> Dict[str, object]:
+    input_ids = encode_text(text, vocab, max_length).numpy()
+    logits = session.run(None, {"input_ids": input_ids})[0]
+    probs = torch.sigmoid(torch.tensor(logits)).squeeze(0).tolist()
+
+    ranked_indices = sorted(
+        range(len(probs)), key=lambda index: probs[index], reverse=True
+    )
+    top_indices = ranked_indices[:top_k]
+    top_labels = [
+        GOEMOTIONS_LABELS[index] if index < len(GOEMOTIONS_LABELS) else str(index)
+        for index in top_indices
+    ]
+
+    return {
+        "text": text,
+        "predicted_label": {
+            "index": top_indices[0],
+            "emotion": top_labels[0],
+        },
+        "probs": {
+            top_labels[i]: probs[top_indices[i]] for i in range(len(top_indices))
+        },
+    }
 
 
 def predict_text(

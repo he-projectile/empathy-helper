@@ -23,7 +23,29 @@ def parse_label_list(raw_label: str) -> List[int]:
 def load_data(csv_path: Path) -> Tuple[List[str], List[List[int]]]:
     dataframe = pd.read_csv(csv_path)
     texts = [clean_text(str(text)) for text in dataframe["text"].fillna("")]
-    label_lists = [parse_label_list(label) for label in dataframe["labels"].fillna("")]
+
+    # Support two label formats:
+    # 1) a single `labels` column containing bracketed indices (legacy)
+    # 2) one column per emotion (one-hot / multi-hot), e.g. 'joy','sadness',...
+    if "labels" in dataframe.columns:
+        label_lists = [parse_label_list(label) for label in dataframe["labels"].fillna("")]
+    else:
+        # treat all columns except 'text' as label columns
+        label_cols = [c for c in dataframe.columns if c != "text"]
+
+        def row_to_indices(row):
+            indices = []
+            for i, col in enumerate(label_cols):
+                val = row[col]
+                try:
+                    is_one = int(val) == 1
+                except Exception:
+                    is_one = str(val).strip() in ("1", "True", "true")
+                if is_one:
+                    indices.append(i)
+            return indices
+
+        label_lists = [row_to_indices(row) for _, row in dataframe.iterrows()]
     return texts, label_lists
 
 

@@ -4,7 +4,7 @@ from datasets import load_dataset
 
 
 def download_data(output_dir: Path) -> Path:
-    dataset = load_dataset("go_emotions")
+    dataset = load_dataset("SetFit/go_emotions")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     for split in ["train", "validation", "test"]:

@@ -2,7 +2,13 @@ import argparse
 import json
 from pathlib import Path
 
-from emotion_assistant.inference.predictor import load_checkpoint, predict_text
+from emotion_assistant.inference.predictor import (
+    load_checkpoint,
+    load_metadata,
+    load_onnx_session,
+    predict_text,
+    predict_text_onnx,
+)
 
 
 def main() -> None:
@@ -23,14 +29,32 @@ def main() -> None:
         help="Path to saved model metadata",
     )
     parser.add_argument(
+        "--onnx",
+        type=Path,
+        default=None,
+        help="Path to a saved ONNX model. If provided, ONNX inference will be used.",
+    )
+    parser.add_argument(
         "--top_k", type=int, default=5, help="Top K probabilities to return"
     )
     args = parser.parse_args()
 
-    model, vocab, metadata = load_checkpoint(args.checkpoint, args.metadata)
-    result = predict_text(
-        args.text, model, vocab, metadata["max_length"], top_k=args.top_k
-    )
+    if args.onnx is not None:
+        vocab, metadata = load_metadata(args.metadata)
+        session = load_onnx_session(args.onnx)
+        result = predict_text_onnx(
+            args.text,
+            session,
+            vocab,
+            metadata["max_length"],
+            top_k=args.top_k,
+        )
+    else:
+        model, vocab, metadata = load_checkpoint(args.checkpoint, args.metadata)
+        result = predict_text(
+            args.text, model, vocab, metadata["max_length"], top_k=args.top_k
+        )
+
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 

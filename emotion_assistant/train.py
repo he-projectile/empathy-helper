@@ -162,7 +162,11 @@ def main(cfg: DictConfig) -> None:
             plots_dir = original_cwd / "plots"
             plots_dir.mkdir(exist_ok=True)
 
-            versions = [p for p in logs_dir.iterdir() if p.name.startswith("version_") and p.is_dir()]
+            versions = [
+                p
+                for p in logs_dir.iterdir()
+                if p.name.startswith("version_") and p.is_dir()
+            ]
             if versions:
                 latest = sorted(versions, key=lambda p: int(p.name.split("_")[1]))[-1]
                 metrics_file = latest / "metrics.csv"
@@ -172,7 +176,9 @@ def main(cfg: DictConfig) -> None:
                         epoch_df = df.groupby("epoch").last().reset_index()
                         if "train_loss" in epoch_df.columns:
                             plt.figure()
-                            plt.plot(epoch_df["epoch"], epoch_df["train_loss"], marker="o")
+                            plt.plot(
+                                epoch_df["epoch"], epoch_df["train_loss"], marker="o"
+                            )
                             plt.xlabel("epoch")
                             plt.ylabel("train_loss")
                             plt.title("Train Loss vs Epoch")
@@ -182,7 +188,12 @@ def main(cfg: DictConfig) -> None:
 
                         if "val_loss" in epoch_df.columns:
                             plt.figure()
-                            plt.plot(epoch_df["epoch"], epoch_df["val_loss"], marker="o", color="orange")
+                            plt.plot(
+                                epoch_df["epoch"],
+                                epoch_df["val_loss"],
+                                marker="o",
+                                color="orange",
+                            )
                             plt.xlabel("epoch")
                             plt.ylabel("val_loss")
                             plt.title("Validation Loss vs Epoch")
@@ -198,7 +209,12 @@ def main(cfg: DictConfig) -> None:
 
                         if f1_col:
                             plt.figure()
-                            plt.plot(epoch_df["epoch"], epoch_df[f1_col], marker="o", color="green")
+                            plt.plot(
+                                epoch_df["epoch"],
+                                epoch_df[f1_col],
+                                marker="o",
+                                color="green",
+                            )
                             plt.xlabel("epoch")
                             plt.ylabel(f1_col)
                             plt.title("Macro F1 vs Epoch")

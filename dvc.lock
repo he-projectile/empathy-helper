@@ -1,0 +1,39 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python -m emotion_assistant.train
+    deps:
+    - path: configs/data/goemotions.yaml
+      hash: md5
+      md5: c83dfae159b73f3b409d61440b852113
+      size: 72
+    - path: configs/model/bilstm.yaml
+      hash: md5
+      md5: cfd630e30fec17fffc5c9ad51ce259bc
+      size: 93
+    - path: configs/train.yaml
+      hash: md5
+      md5: bef71d842e096e1b08ee9b1655d93836
+      size: 138
+    - path: data/raw/test.csv
+      hash: md5
+      md5: a7ba093930ede45bdf7d35debc687e12
+      size: 689110
+    - path: data/raw/train.csv
+      hash: md5
+      md5: 024e04f9363a829cf06d221211b52f0a
+      size: 5536065
+    - path: data/raw/validation.csv
+      hash: md5
+      md5: 115d7c0f2c405b6f937806695eeb8d46
+      size: 691323
+    - path: emotion_assistant/train.py
+      hash: md5
+      md5: eb2fbf0986543f7406b6c3ca94880dd1
+      size: 8479
+    outs:
+    - path: outputs/checkpoints
+      hash: md5
+      md5: 77c090df9c35263a21a72db0ad537cf7.dir
+      size: 73442864
+      nfiles: 3
