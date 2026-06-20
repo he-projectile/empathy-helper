@@ -16,9 +16,7 @@ dependencies = [
     "pandas>=2.3.3",
     "pre-commit>=4.6.0",
     "scikit-learn>=1.7.2",
-    "torch>=2.12.1",
-    "torchaudio>=2.11.0",
-    "torchvision>=0.27.1",
+    "torch>=2.6.0,<2.7",
 ]
 
 [tool.ruff]
@@ -31,3 +29,11 @@ select = ["E", "F", "I"]
 dev = [
     "ruff>=0.15.18",
 ]
+
+[[tool.uv.index]]
+name = "pytorch-cuda"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cuda" }

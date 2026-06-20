@@ -1,0 +1,19 @@
+stages:
+  download:
+    cmd: python datasetDownload.py --output-dir data/raw
+    deps:
+      - datasetDownload.py
+    outs:
+      - data/raw
+  train:
+    cmd: python -m emotion_assistant.train
+    deps:
+      - emotion_assistant/train.py
+      - configs/train.yaml
+      - configs/data/goemotions.yaml
+      - configs/model/bilstm.yaml
+      - data/raw/train.csv
+      - data/raw/validation.csv
+      - data/raw/test.csv
+    outs:
+      - outputs/checkpoints

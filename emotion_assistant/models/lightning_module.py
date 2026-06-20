@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from lightning import LightningModule
 from torchmetrics.classification import MultilabelAccuracy, MultilabelF1Score
 

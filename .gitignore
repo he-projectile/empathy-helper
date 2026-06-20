@@ -13,6 +13,8 @@ weights/
 runs/
 logs/
 checkpoints/
+outputs/
+.mlruns/
 
 # Игнорируем любые тяжелые форматы файлов ML
 *.pth
