@@ -1,26 +1,26 @@
 # Emotion Assistant
 
-Emotion Assistant is a machine learning system for automatic emotion classification of short text messages.
+Emotion Assistant — система автоматической классификации эмоций в коротких текстовых сообщениях.
 
-The project is designed as an industrial-style MLOps pipeline and demonstrates the complete lifecycle of an NLP model: data management, training, experiment tracking, packaging, and inference.
+Проект реализован в формате промышленного ML-сервиса и демонстрирует полный цикл работы с моделью машинного обучения: управление данными, обучение, логирование экспериментов, упаковку модели и инференс.
 
 ---
 
-# Problem Statement
+# Описание проекта
 
-Many people experience difficulties interpreting emotional intent in written communication.
+Многим людям бывает сложно правильно интерпретировать эмоциональную окраску текстовых сообщений. Особенно актуальна эта проблема для людей с особенностями социальной коммуникации.
 
-This project aims to classify short text messages into emotion categories and provide probability estimates for all supported emotions.
+Цель проекта — автоматически определять эмоцию, выраженную в коротком текстовом сообщении, и возвращать вероятности принадлежности ко всем классам.
 
-Example input:
+Пример входных данных:
 
 ```json
 {
-  "text": "I feel really excited and hopeful today."
+  "text": "Сегодня у меня отличное настроение!"
 }
 ```
 
-Example output:
+Пример результата:
 
 ```json
 {
@@ -36,92 +36,93 @@ Example output:
 
 ---
 
-# Dataset
+# Датасет
 
-The primary dataset is **GoEmotions**.
+Для обучения используется датасет **GoEmotions**.
 
-Dataset characteristics:
+Характеристики датасета:
 
-* approximately 58,000 text samples
-* 27 emotion classes
-* collected from Reddit comments
-* contains noisy real-world language
-* originally supports multiple labels per sample
+* около 58 000 текстовых сообщений;
+* 27 эмоциональных категорий;
+* сообщения взяты из Reddit;
+* содержит реальные пользовательские тексты;
+* присутствует шум и неоднозначная разметка;
+* исходно поддерживает множественные метки.
 
-Dataset storage is managed through DVC and is not stored directly in Git.
+Хранение данных осуществляется через DVC. Файлы датасета не должны храниться в Git-репозитории.
 
 ---
 
-# Model Architecture
+# Архитектура модели
 
-## Baseline
+## Базовая модель
 
-* TF-IDF
-* Logistic Regression
+Используется для сравнения качества:
 
-## Main Model
+* TF-IDF;
+* Logistic Regression.
 
-The main model is trained from scratch without pretrained language models.
+## Основная модель
 
-Architecture:
+Основная модель обучается с нуля без использования предобученных языковых моделей.
+
+Архитектура:
 
 ```text
-Text
- ↓
-Tokenizer
- ↓
-Vocabulary Encoding
- ↓
-Embedding Layer
- ↓
+Текст
+  ↓
+Токенизация
+  ↓
+Преобразование в индексы словаря
+  ↓
+Embedding
+  ↓
 Bidirectional LSTM
- ↓
-Fully Connected Layer
- ↓
-Emotion Probabilities
+  ↓
+Полносвязный классификатор
+  ↓
+Вероятности эмоций
 ```
 
 ---
 
-# Metrics
+# Метрики качества
 
-The following metrics are used:
+Для оценки качества используются:
 
-* Accuracy
-* Macro F1 Score
+* Accuracy;
+* Macro F1-score.
 
-Expected performance:
+Целевые значения:
 
-| Metric   | Target |
-| -------- | ------ |
-| Accuracy | 0.75+  |
-| Macro F1 | 0.70+  |
+| Метрика  | Ожидаемое значение |
+| -------- | ------------------ |
+| Accuracy | > 0.75             |
+| Macro F1 | > 0.70             |
 
-Dataset split:
+Разделение данных:
 
-* Train: 80%
-* Validation: 10%
-* Test: 10%
-
-Stratified splitting is used whenever possible.
+* обучение — 80%;
+* валидация — 10%;
+* тестирование — 10%.
 
 ---
 
-# Technology Stack
+# Используемые технологии
 
-* Python
-* PyTorch
-* PyTorch Lightning
-* Hydra
-* DVC
-* MLflow
-* uv
-* Ruff
-* pre-commit
+* Python;
+* PyTorch;
+* PyTorch Lightning;
+* Hydra;
+* DVC;
+* MLflow;
+* uv;
+* Ruff;
+* pre-commit.
 
 ---
 
-# Project Structure
+# Структура проекта
 
 ```text
 .
@@ -149,27 +150,27 @@ Stratified splitting is used whenever possible.
 
 ---
 
-# Setup
+# Установка окружения
 
-Create the environment and install dependencies:
+Установка зависимостей:
 
 ```bash
 uv sync
 ```
 
-Activate environment if necessary:
+Активация виртуального окружения:
 
 ```bash
 .venv\Scripts\activate
 ```
 
-Install pre-commit hooks:
+Установка pre-commit хуков:
 
 ```bash
 pre-commit install
 ```
 
-Verify code quality tools:
+Проверка качества кода:
 
 ```bash
 pre-commit run -a
@@ -177,15 +178,15 @@ pre-commit run -a
 
 ---
 
-# Data Preparation
+# Подготовка данных
 
-Download the dataset:
+Скачивание датасета:
 
 ```bash
 uv run python datasetDownload.py --output-dir data/raw
 ```
 
-If DVC storage is configured:
+Если настроено DVC-хранилище:
 
 ```bash
 dvc pull
@@ -193,32 +194,32 @@ dvc pull
 
 ---
 
-# Training
+# Обучение модели
 
-Run training with default Hydra configuration:
+Запуск обучения с параметрами по умолчанию:
 
 ```bash
 uv run python -m emotion_assistant.train
 ```
 
-Example with Hydra overrides:
+Пример запуска с переопределением параметров Hydra:
 
 ```bash
 uv run python -m emotion_assistant.train trainer.max_epochs=20 data.batch_size=128
 ```
 
-Training pipeline:
+Во время обучения выполняются следующие шаги:
 
-1. Load dataset
-2. Build vocabulary
-3. Create train/validation/test splits
-4. Train BiLSTM model
-5. Evaluate performance
-6. Log metrics to MLflow
-7. Save checkpoints
-8. Export production artifacts
+1. Загрузка данных.
+2. Построение словаря.
+3. Формирование обучающей, валидационной и тестовой выборок.
+4. Обучение модели BiLSTM.
+5. Расчёт метрик качества.
+6. Логирование эксперимента в MLflow.
+7. Сохранение контрольных точек.
+8. Экспорт артефактов для инференса.
 
-Generated artifacts:
+После завершения обучения создаются файлы:
 
 ```text
 outputs/checkpoints/last.ckpt
@@ -227,24 +228,26 @@ outputs/checkpoints/metadata.pkl
 
 ---
 
-# Experiment Tracking
+# Логирование экспериментов
 
-MLflow server is expected at:
+Для отслеживания экспериментов используется MLflow.
+
+Ожидаемый адрес сервера:
 
 ```text
 http://127.0.0.1:8080
 ```
 
-Logged information:
+Логируются:
 
-* training loss
-* validation loss
-* accuracy
-* F1 score
-* hyperparameters
-* git commit hash
+* train loss;
+* validation loss;
+* accuracy;
+* macro F1-score;
+* гиперпараметры;
+* идентификатор git-коммита.
 
-Training plots are saved to:
+Графики обучения сохраняются в директорию:
 
 ```text
 plots/
@@ -252,28 +255,28 @@ plots/
 
 ---
 
-# Inference
+# Инференс
 
-Run prediction for a text message:
+Запуск предсказания для одного сообщения:
 
 ```bash
-uv run python -m emotion_assistant.infer "I feel really excited today."
+uv run python -m emotion_assistant.infer "Сегодня отличный день"
 ```
 
-Specify checkpoint manually:
+Запуск с явным указанием контрольной точки:
 
 ```bash
 uv run python -m emotion_assistant.infer \
-    "I feel really excited today." \
+    "Сегодня отличный день" \
     --checkpoint outputs/checkpoints/last.ckpt \
     --metadata outputs/checkpoints/metadata.pkl
 ```
 
 ---
 
-# ONNX Export
+# Экспорт модели в ONNX
 
-Export trained model:
+Экспорт обученной модели:
 
 ```bash
 uv run python -m emotion_assistant.inference.export_onnx \
@@ -282,7 +285,7 @@ uv run python -m emotion_assistant.inference.export_onnx \
     --output outputs/model.onnx
 ```
 
-Generated artifact:
+После выполнения будет создан файл:
 
 ```text
 outputs/model.onnx
@@ -290,9 +293,9 @@ outputs/model.onnx
 
 ---
 
-# TensorRT Conversion
+# Конвертация в TensorRT
 
-Convert ONNX model into TensorRT engine:
+Преобразование ONNX-модели в TensorRT:
 
 ```bash
 python scripts/export_tensorrt.py \
@@ -300,7 +303,7 @@ python scripts/export_tensorrt.py \
     --output outputs/model.engine
 ```
 
-Generated artifact:
+Результат:
 
 ```text
 outputs/model.engine
@@ -308,21 +311,21 @@ outputs/model.engine
 
 ---
 
-# DVC Pipeline
+# Работа с DVC
 
-Reproduce the entire pipeline:
+Полное воспроизведение пайплайна:
 
 ```bash
 dvc repro
 ```
 
-Pull artifacts from remote storage:
+Загрузка артефактов из удалённого хранилища:
 
 ```bash
 dvc pull
 ```
 
-Push artifacts:
+Выгрузка артефактов в удалённое хранилище:
 
 ```bash
 dvc push
@@ -330,54 +333,54 @@ dvc push
 
 ---
 
-# Production Preparation
+# Подготовка модели к продакшену
 
-Production deployment includes:
+Для развёртывания модели выполняются следующие шаги:
 
-1. Trained checkpoint export
-2. ONNX conversion
-3. TensorRT optimization
-4. Packaging inference code
-5. Deployment through inference server
+1. Обучение модели.
+2. Сохранение контрольной точки.
+3. Экспорт в формат ONNX.
+4. Оптимизация через TensorRT.
+5. Подготовка сервиса инференса.
 
-Required artifacts:
+Для запуска инференса необходимы следующие артефакты:
 
 ```text
 model.onnx
 metadata.pkl
-vocabulary
-inference code
-configuration files
+словарь токенов
+конфигурационные файлы
+код инференса
 ```
 
 ---
 
-# Inference Server
+# Сервер инференса
 
-The model can be deployed using:
+Модель может быть развёрнута с использованием:
 
-* MLflow Serving
-* Triton Inference Server
+* MLflow Serving;
+* Triton Inference Server.
 
-Future deployment targets:
+Предполагаемые сценарии использования:
 
-* Desktop applications
-* Corporate messengers
-* Telegram bots
-* Communication assistance tools
+* настольные приложения;
+* корпоративные мессенджеры;
+* Telegram-боты;
+* системы поддержки коммуникации.
 
 ---
 
-# Development Notes
+# Примечания
 
-The repository follows the course requirements:
+Проект соответствует требованиям курса MLOps:
 
-* Hydra-based configuration management
-* PyTorch Lightning training
-* DVC data management
-* MLflow experiment tracking
-* ONNX export
-* TensorRT packaging
-* Reproducible training pipeline
+* обучение модели с нуля;
+* управление конфигурацией через Hydra;
+* управление данными через DVC;
+* логирование экспериментов в MLflow;
+* экспорт модели в ONNX;
+* подготовка TensorRT-артефактов;
+* воспроизводимый пайплайн обучения.
 
-Large datasets, checkpoints, and generated artifacts must never be committed directly to Git.
+Файлы датасета, веса моделей и другие крупные артефакты не должны храниться в Git-репозитории.
