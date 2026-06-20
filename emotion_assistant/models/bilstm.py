@@ -8,6 +8,8 @@ class BiLSTMClassifier(nn.Module):
         vocab_size,
         embedding_dim,
         hidden_dim,
+        num_layers,
+        dropout,
         num_classes,
     ):
         super().__init__()
@@ -21,9 +23,13 @@ class BiLSTMClassifier(nn.Module):
         self.lstm = nn.LSTM(
             embedding_dim,
             hidden_dim,
+            num_layers=num_layers,
             bidirectional=True,
             batch_first=True,
+            dropout=dropout if num_layers > 1 else 0.0,
         )
+
+        self.dropout = nn.Dropout(dropout)
 
         self.classifier = nn.Linear(
             hidden_dim * 2,

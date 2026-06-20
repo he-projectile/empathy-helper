@@ -39,7 +39,7 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 Thumbs.db
-
+AGENTS.md
 
 !data/
 !data/**/.gitkeep
