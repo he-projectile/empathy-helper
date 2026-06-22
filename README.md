@@ -62,10 +62,10 @@ hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='last.ckp
 
 ```bash
 # Классификация текста
-uv run python -m emotion_assistant.infer "Сегодня отличный день"
+uv run python -m emotion_assistant.infer "I feel happy af"
 
 # С явным указанием пути к модели
-uv run python -m emotion_assistant.infer "Сегодня отличный день" \
+uv run python -m emotion_assistant.infer "I feel happy af" \
     --checkpoint outputs/checkpoints/last.ckpt \
     --metadata outputs/checkpoints/metadata.pkl
 ```
@@ -196,7 +196,7 @@ plots/macro_f1.png
 
 Предобученные модели доступны на Hugging Face:
 
-**Repository:** [`he-projectile/empathy-helper-model`](https://huggingface.co/he-projectile/empathy-helper-model)
+**Репа:** [`he-projectile/empathy-helper-model`](https://huggingface.co/he-projectile/empathy-helper-model)
 
 **Файлы модели:**
 * `metadata.pkl` — метаданные (словарь токенов, индексы классов)
@@ -206,8 +206,11 @@ plots/macro_f1.png
 
 ```bash
 # HF CLI
-hf repo download he-projectile/empathy-helper-model -o outputs/checkpoints
+hf cp hf://he-projectile/empathy-helper-model/metadata.pkl outputs/checkpoints/metadata.pkl
 
+hf cp hf://he-projectile/empathy-helper-model/last.ckpt outputs/checkpoints/last.ckpt
+```
+```python
 # Python
 from huggingface_hub import hf_hub_download
 
@@ -261,5 +264,3 @@ pre-commit run -a
 * **Быстрый старт** — загрузите модель и сразу начните использовать.
 
 ---
-
-Проект соответствует требованиям MLOps курса МИПТ.
