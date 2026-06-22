@@ -1,16 +1,8 @@
 # Emotion Assistant
 
-Emotion Assistant — система автоматической классификации эмоций в коротких текстовых сообщениях.
+**Emotion Assistant** — система автоматической классификации эмоций в коротких текстовых сообщениях.
 
-Проект реализован в формате промышленного ML-сервиса и демонстрирует полный цикл работы с моделью машинного обучения: управление данными, обучение, логирование экспериментов, упаковку модели и инференс.
-
----
-
-# Описание проекта
-
-Многим людям бывает сложно правильно интерпретировать эмоциональную окраску текстовых сообщений. Особенно актуальна эта проблема для людей с особенностями социальной коммуникации.
-
-Цель проекта — автоматически определять эмоцию, выраженную в коротком текстовом сообщении, и возвращать вероятности принадлежности ко всем классам.
+Система помогает людям автоматически определять эмоцию, выраженную в коротком текстовом сообщении, и получать вероятности принадлежности ко всем эмоциональным классам.
 
 Пример входных данных:
 
@@ -36,75 +28,81 @@ Emotion Assistant — система автоматической классиф
 
 ---
 
-# Датасет
+# Быстрый старт
 
-Для обучения используется датасет **GoEmotions**.
+## 1. Установка зависимостей
 
-Характеристики датасета:
+```bash
+uv sync
+```
 
-* около 58 000 текстовых сообщений;
-* 27 эмоциональных категорий;
-* сообщения взяты из Reddit;
-* содержит реальные пользовательские тексты;
-* присутствует шум и неоднозначная разметка;
-* исходно поддерживает множественные метки.
+## 2. Загрузка предобученной модели с Hugging Face
 
-Данные не хранятся в репозитории. Скачайте датасет локально с помощью `datasetDownload.py` или напрямую через библиотеку `datasets`.
+Модель автоматически скачается при первом запуске инференса:
+
+```bash
+uv run python -m emotion_assistant.infer "Ваш текст здесь"
+```
+
+Или загрузить модель вручную:
+
+```bash
+# Использование HF CLI (если установлен)
+hf repo download he-projectile/empathy-helper-model --pattern "*.ckpt" --pattern "*.pkl" -o outputs/checkpoints
+
+# Или через Python
+python -c "
+from huggingface_hub import hf_hub_download
+hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='metadata.pkl', local_dir='outputs/checkpoints')
+hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='last.ckpt', local_dir='outputs/checkpoints')
+"
+```
+
+## 3. Использование модели
+
+```bash
+# Классификация текста
+uv run python -m emotion_assistant.infer "Сегодня отличный день"
+
+# С явным указанием пути к модели
+uv run python -m emotion_assistant.infer "Сегодня отличный день" \
+    --checkpoint outputs/checkpoints/last.ckpt \
+    --metadata outputs/checkpoints/metadata.pkl
+```
 
 ---
 
 # Архитектура модели
 
-## Базовая модель
+Основная модель обучена на датасете **GoEmotions**:
 
-Используется для сравнения качества:
-
-* TF-IDF;
-* Logistic Regression.
-
-## Основная модель
-
-Основная модель обучается с нуля без использования предобученных языковых моделей.
+* ~58 000 текстовых сообщений;
+* 27 эмоциональных категорий;
+* сообщения из Reddit.
 
 Архитектура:
 
-```text
-Текст
-  ↓
-Токенизация
-  ↓
-Преобразование в индексы словаря
-  ↓
-Embedding
-  ↓
-Bidirectional LSTM
-  ↓
-Полносвязный классификатор
-  ↓
-Вероятности эмоций
 ```
+Текст → Токенизация → Embedding → Bidirectional LSTM → Классификатор → Вероятности эмоций
+```
+
 
 ---
 
-# Метрики качества
+# Структура проекта
 
-Для оценки качества используются:
+```
+emotion_assistant/
+  ├── data/              # Загрузка и подготовка данных
+  ├── models/            # Архитектура моделей
+  ├── inference/         # Инференс и экспорт
+  ├── train.py           # Скрипт обучения
+  └── infer.py           # Скрипт инференса
 
-* Accuracy;
-* Macro F1-score.
-
-Целевые значения:
-
-| Метрика  | Ожидаемое значение |
-| -------- | ------------------ |
-| Accuracy | > 0.75             |
-| Macro F1 | > 0.70             |
-
-Разделение данных:
-
-* обучение — 80%;
-* валидация — 10%;
-* тестирование — 10%.
+configs/                 # Конфигурации Hydra
+plots/                   # Графики обучения
+outputs/checkpoints/     # Сохраняемые модели
+```
 
 ---
 
@@ -115,61 +113,140 @@ Bidirectional LSTM
 * PyTorch Lightning;
 * Hydra;
 * MLflow;
-* uv;
-* Ruff;
-* pre-commit.
+* uv.
 
 ---
 
-# Структура проекта
+# Расширенное использование
 
-```text
-.
-├── configs/
-│   ├── train.yaml
-│   ├── data/
-│   ├── model/
-│   └── logging/
-│
-├── emotion_assistant/
-│   ├── data/
-│   ├── models/
-│   ├── inference/
-│   ├── utils/
-│   ├── train.py
-│   └── infer.py
-│
-├── scripts/
-├── plots/
-├── outputs/
-├── 
-├── pyproject.toml
-└── README.md
+## Экспорт модели в ONNX
+
+```bash
+uv run python -m emotion_assistant.inference.export_onnx \
+    --checkpoint outputs/checkpoints/last.ckpt \
+    --metadata outputs/checkpoints/metadata.pkl \
+    --output outputs/model.onnx
+```
+
+## Инференс из ONNX-модели
+
+```bash
+uv run python -m emotion_assistant.infer \
+    "Сегодня отличный день" \
+    --onnx outputs/model.onnx \
+    --metadata outputs/checkpoints/metadata.pkl
 ```
 
 ---
 
-# Установка окружения
+# Обучение модели (опционально)
 
-Установка зависимостей:
+Для переобучения модели на своих данных:
+
+## Подготовка данных
+
+```bash
+# Если используется GoEmotions
+uv run python datasetDownload.py --output-dir data/raw
+```
+
+## Запуск обучения
+
+```bash
+# С параметрами по умолчанию
+uv run python -m emotion_assistant.train
+
+# С переопределением параметров
+uv run python -m emotion_assistant.train trainer.max_epochs=20 data.batch_size=128
+```
+
+В процессе обучения:
+
+1. Загружаются данные.
+2. Строится словарь токенов.
+3. Формируются обучающая, валидационная и тестовая выборки.
+4. Обучается модель BiLSTM.
+5. Рассчитываются метрики качества.
+6. Логируются эксперименты в MLflow.
+7. Сохраняются контрольные точки.
+
+После завершения обучения:
+
+```
+outputs/checkpoints/last.ckpt
+outputs/checkpoints/metadata.pkl
+plots/train_loss.png
+plots/val_loss.png
+plots/macro_f1.png
+```
+
+## Логирование экспериментов
+
+Метрики логируются в MLflow (адрес по умолчанию: `http://127.0.0.1:8080`):
+
+* train loss;
+* validation loss;
+* accuracy;
+* macro F1-score;
+* гиперпараметры.
+
+---
+
+# Модель на Hugging Face
+
+Предобученные модели доступны на Hugging Face:
+
+**Repository:** [`he-projectile/empathy-helper-model`](https://huggingface.co/he-projectile/empathy-helper-model)
+
+**Файлы модели:**
+* `metadata.pkl` — метаданные (словарь токенов, индексы классов)
+* `last.ckpt` — веса модели
+
+Загрузка вручную:
+
+```bash
+# HF CLI
+hf repo download he-projectile/empathy-helper-model -o outputs/checkpoints
+
+# Python
+from huggingface_hub import hf_hub_download
+
+hf_hub_download(
+    repo_id='he-projectile/empathy-helper-model',
+    filename='metadata.pkl',
+    local_dir='outputs/checkpoints'
+)
+
+hf_hub_download(
+    repo_id='he-projectile/empathy-helper-model',
+    filename='last.ckpt',
+    local_dir='outputs/checkpoints'
+)
+```
+
+---
+
+# Настройка разработки
+
+## Установка зависимостей
 
 ```bash
 uv sync
 ```
 
-Активация виртуального окружения:
+## Активация виртуального окружения
 
 ```bash
 .venv\Scripts\activate
 ```
 
-Установка pre-commit хуков:
+## Установка pre-commit хуков
 
 ```bash
 pre-commit install
 ```
 
-Проверка качества кода:
+## Проверка качества кода
 
 ```bash
 pre-commit run -a
@@ -177,281 +254,12 @@ pre-commit run -a
 
 ---
 
-# Подготовка данных
-
-Скачивание датасета:
-
-```bash
-uv run python datasetDownload.py --output-dir data/raw
-```
-
----
-
-# Обучение модели
-
-Запуск обучения с параметрами по умолчанию:
-
-```bash
-uv run python -m emotion_assistant.train
-```
-
-Пример запуска с переопределением параметров Hydra:
-
-```bash
-uv run python -m emotion_assistant.train trainer.max_epochs=20 data.batch_size=128
-```
-
-Во время обучения выполняются следующие шаги:
-
-1. Загрузка данных.
-2. Построение словаря.
-3. Формирование обучающей, валидационной и тестовой выборок.
-4. Обучение модели BiLSTM.
-5. Расчёт метрик качества.
-6. Логирование эксперимента в MLflow.
-7. Сохранение контрольных точек.
-8. Экспорт артефактов для инференса.
-
-После завершения обучения создаются файлы:
-
-```text
-outputs/checkpoints/last.ckpt
-outputs/checkpoints/metadata.pkl
-```
-
----
-
-# Логирование экспериментов
-
-Для отслеживания экспериментов используется MLflow.
-
-Ожидаемый адрес сервера:
-
-```text
-http://127.0.0.1:8080
-```
-
-Логируются:
-
-* train loss;
-* validation loss;
-* accuracy;
-* macro F1-score;
-* гиперпараметры;
-* идентификатор git-коммита.
-
-Графики обучения сохраняются в директорию:
-
-```text
-plots/
-```
-
----
-
-# Инференс
-
-Inference works without training. A user can run predictions from a previously trained checkpoint or an ONNX model, and the inference pipeline does not perform any model training.
-
-Запуск предсказания для одного сообщения:
-
-```bash
-uv run python -m emotion_assistant.infer "Сегодня отличный день"
-```
-
-Запуск с явным указанием контрольной точки:
-
-```bash
-uv run python -m emotion_assistant.infer \
-    "Сегодня отличный день" \
-    --checkpoint outputs/checkpoints/last.ckpt \
-    --metadata outputs/checkpoints/metadata.pkl
-```
-
-Экспорт модели в ONNX:
-
-```bash
-uv run python -m emotion_assistant.inference.export_onnx \
-    --checkpoint outputs/checkpoints/last.ckpt \
-    --metadata outputs/checkpoints/metadata.pkl \
-    --output outputs/model.onnx
-```
-
-Запуск инференса из ONNX-модели:
-
-```bash
-uv run python -m emotion_assistant.infer \
-    "Сегодня отличный день" \
-    --onnx outputs/model.onnx \
-    --metadata outputs/checkpoints/metadata.pkl
-```
-
----
-
-# Автоматическая загрузка модели
-
-Если локальная модель отсутствует, можно автоматически загрузить её через DVC или Google Drive.
-
-```bash
-uv run python -m emotion_assistant.inference.dvc_download \
-    --model-path outputs/checkpoints/last.ckpt \
-    --gdrive-id <GDRIVE_FILE_ID>
-```
-
-Для автоматической загрузки контрольной точки используйте `huggingface_hub` или `hf` CLI.
-
-Пример с `hf` CLI:
-
-```bash
-hf repo download he-projectile/empathy-helper-model --pattern last.ckpt -o outputs/checkpoints
-```
-
-Пример с Python:
-
-```python
-from huggingface_hub import hf_hub_download
-hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='last.ckpt', local_dir='outputs/checkpoints')
-```
-
----
-
-# Экспорт модели в ONNX
-
-Экспорт обученной модели:
-
-```bash
-uv run python -m emotion_assistant.inference.export_onnx \
-    --checkpoint outputs/checkpoints/last.ckpt \
-    --metadata outputs/checkpoints/metadata.pkl \
-    --output outputs/model.onnx
-```
-
-После выполнения будет создан файл:
-
-```text
-outputs/model.onnx
-```
-
----
-
-# Экспорт в TensorRT
-
-Преобразование ONNX-модели в TensorRT:
-
-```bash
-uv run python scripts/export_tensorrt.py \
-    --onnx outputs/model.onnx \
-    --output outputs/model.engine
-```
-
-Результат:
-
-```text
-outputs/model.engine
-```
-
----
-
-Преобразование ONNX-модели в TensorRT:
-
-```bash
-python scripts/export_tensorrt.py \
-    --onnx outputs/model.onnx \
-    --output outputs/model.engine
-```
-
-Результат:
-
-```text
-outputs/model.engine
-```
-
----
-
-# Работа с DVC
-
-Полное воспроизведение пайплайна:
-
-```bash
-dvc repro
-```
-
-Загрузка артефактов из удалённого хранилища:
-
-```bash
-dvc pull
-```
-
-Выгрузка артефактов в удалённое хранилище:
-
-```bash
-dvc push
-```
-
----
-
-# GitHub CI
-
-Этот проект готов к работе на GitHub с GitHub Actions.
-
-При каждом пуше и pull request выполняется:
-
-- установка зависимостей
-- проверка импорта модулей
-- запуск `ruff` для статического анализа
-- минимальная валидация точки входа
-
-Workflow можно найти в `.github/workflows/ci.yml`.
-
----
-
-# Подготовка модели к продакшену
-
-Для развёртывания модели выполняются следующие шаги:
-
-1. Обучение модели.
-2. Сохранение контрольной точки.
-3. Экспорт в формат ONNX.
-4. Оптимизация через TensorRT.
-5. Подготовка сервиса инференса.
-
-Для запуска инференса необходимы следующие артефакты:
-
-```text
-model.onnx
-metadata.pkl
-словарь токенов
-конфигурационные файлы
-код инференса
-```
-
----
-
-# Сервер инференса
-
-Модель может быть развёрнута с использованием:
-
-* MLflow Serving;
-* Triton Inference Server.
-
-Предполагаемые сценарии использования:
-
-* настольные приложения;
-* корпоративные мессенджеры;
-* Telegram-боты;
-* системы поддержки коммуникации.
-
----
-
 # Примечания
 
-Проект соответствует требованиям курса MLOps:
+* **Инференс не требует обучения** — используйте предобученную модель с Hugging Face.
+* **Обучение опционально** — переобучайте модель только при необходимости.
+* **Быстрый старт** — загрузите модель и сразу начните использовать.
 
-* обучение модели с нуля;
-* управление конфигурацией через Hydra;
-* управление данными через DVC;
-* логирование экспериментов в MLflow;
-* экспорт модели в ONNX;
-* подготовка TensorRT-артефактов;
-* воспроизводимый пайплайн обучения.
+---
 
-Файлы датасета, веса моделей и другие крупные артефакты не должны храниться в Git-репозитории.
+Проект соответствует требованиям MLOps курса МИПТ.
