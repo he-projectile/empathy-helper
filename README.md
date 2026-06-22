@@ -30,6 +30,12 @@
 
 # Быстрый старт
 
+## 0. Клонирование модели
+
+```bash
+git clone https://github.com/he-projectile/empathy-helper .
+```
+
 ## 1. Установка зависимостей
 
 ```bash
@@ -38,25 +44,12 @@ uv sync
 
 ## 2. Загрузка предобученной модели с Hugging Face
 
-Модель автоматически скачается при первом запуске инференса:
-
 ```bash
-uv run python -m emotion_assistant.infer "Ваш текст здесь"
+hf cp hf://he-projectile/empathy-helper-model/last.ckpt outputs/checkpoints/last.ckpt
+
+hf cp hf://he-projectile/empathy-helper-model/metadata.pkl outputs/checkpoints/metadata.pkl
 ```
 
-Или загрузить модель вручную:
-
-```bash
-# Использование HF CLI (если установлен)
-hf repo download he-projectile/empathy-helper-model --pattern "*.ckpt" --pattern "*.pkl" -o outputs/checkpoints
-
-# Или через Python
-python -c "
-from huggingface_hub import hf_hub_download
-hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='metadata.pkl', local_dir='outputs/checkpoints')
-hf_hub_download(repo_id='he-projectile/empathy-helper-model', filename='last.ckpt', local_dir='outputs/checkpoints')
-"
-```
 
 ## 3. Использование модели
 
@@ -210,23 +203,6 @@ hf cp hf://he-projectile/empathy-helper-model/metadata.pkl outputs/checkpoints/m
 
 hf cp hf://he-projectile/empathy-helper-model/last.ckpt outputs/checkpoints/last.ckpt
 ```
-```python
-# Python
-from huggingface_hub import hf_hub_download
-
-hf_hub_download(
-    repo_id='he-projectile/empathy-helper-model',
-    filename='metadata.pkl',
-    local_dir='outputs/checkpoints'
-)
-
-hf_hub_download(
-    repo_id='he-projectile/empathy-helper-model',
-    filename='last.ckpt',
-    local_dir='outputs/checkpoints'
-)
-```
-
 ---
 
 # Настройка разработки
@@ -254,6 +230,23 @@ pre-commit install
 ```bash
 pre-commit run -a
 ```
+
+## Запуск MLflow UI
+
+Если вы хотите просматривать эксперименты и артефакты во время или после обучения, запустите MLflow UI локально:
+
+```bash
+# В консоли (порт можно изменить)
+mlflow ui --host 127.0.0.1 --port 8080
+```
+
+По умолчанию MLflow сохранит треки в локальной директории `mlruns/`. Откройте в браузере:
+
+```
+http://127.0.0.1:8080
+```
+
+Если вы запускаете обучение через `uv run`, запустите MLflow UI в отдельном терминале перед или во время тренировки.
 
 ---
 
